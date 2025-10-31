@@ -122,9 +122,9 @@ if (strcmp(CL, 'Fourier') || strcmp(CL, 'fourier') ||...
         % On fait l'assemblage de la matrice de masse surfacique globale
         % A COMPLETER
         for i = 1:2
-          I = Numaretes(l,i);
+          I = Numaretes(idFourier(l),i);
           for j = 1:2
-              J = Numaretes(l,j);
+              J = Numaretes(idFourier(l),j);
               SS(I,J) = SS(I,J)+ Sel(i,j);
           end 
         end 
