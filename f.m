@@ -26,7 +26,7 @@ choix_source = 'Radiale-Exo1-et-2'
 if strcmp(choix_source,'validation')
   % A COMPLETER POUR LA VALIDATION :
   
-  val = (-omega * omega + 25 * pi * pi) * sin(3*pi*x).*sin(4*pi*y);
+  val = sin(3*pi*x).*sin(4*pi*y);
 end
 
 if strcmp(choix_source,'sin-sin')
@@ -37,14 +37,14 @@ end
 if strcmp(choix_source,'constante')
   % Terme source constant
   % A COMPLETER 
-  %val = ones(size(x));
+  val = ones(size(x));
 end
 
 if strcmp(choix_source,'Radiale-Exo1-et-2')
   % Source radiale et sinusoidale
   A = 5;           % Amplitude de la source
-  x0 = 1;        % Abscisse du centre 
-  y0 = 2;        % Ordonnee du centre 
+  x0 = 0.6;        % Abscisse du centre 
+  y0 = 2.5;        % Ordonnee du centre 
   rr = sqrt((x - x0).^2 + (y - y0).^2);   % Variable radiale
   val = A * sin(omega*rr);                % Expression de la source
 end
