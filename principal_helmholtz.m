@@ -32,7 +32,7 @@ close all
 % ------------------- %
 % Donnees du probleme %
 % ------------------- %
-nom_maillage = 'maillages/geom-2-couches.msh'; %'maillages/geomCarre.msh'; %'maillages/geomPacman.msh';
+nom_maillage = 'maillages/geomCarre.msh'; %'maillages/geom-2-couches.msh'; 'maillages/geomCarre.msh'; %'maillages/geomPacman.msh';
 validation = 'non';           % Pour valider 'oui' ou 'non' les calculs
 
 % Choix des conditions aux limites
@@ -40,12 +40,12 @@ CL = 'Fourier'; % 'Dirichlet', 'Neumann' ou 'Fourier'ou 'Mixtes'
 
 % Donnees du probleme
 rho = 1.0;        % Coefficient du probleme
-omega = 5.0;      % Frequence
+omega = sqrt(2)*pi;      % Frequence
 PP_Gamma = 1.0;   % Pression exterieure
 alpha = -rho * omega^2;
 
 if (strcmp(CL, 'Fourier') || strcmp(CL, 'fourier') ||...
-    strcmp(CL, 'Mixtes')  || strcmp(CL, 'mixtes'))
+        strcmp(CL, 'Mixtes')  || strcmp(CL, 'mixtes'))
     beta = -1i * omega;   % Condition de Fourier
     %beta = 0;           % Condition de Neumann
 end
@@ -60,7 +60,7 @@ end
 % Lecture du maillage et affichage %
 % -------------------------------- %
 [Nbpt, Nbtri, Coorneu, Refneu, Numtri, ...
- Reftri, Nbaretes, Numaretes, Refaretes] = lecture_msh(nom_maillage);
+    Reftri, Nbaretes, Numaretes, Refaretes] = lecture_msh(nom_maillage);
 
 % ---------------------- %
 % Calcul des matrices EF %
@@ -74,39 +74,34 @@ LL = zeros(Nbpt, 1);     % vecteur second membre
 % Boucle sur les triangles %
 % ------------------------ %
 for l = 1:Nbtri
-   % Coordonnees des sommets du triangles
-  % A COMPLETER
-  S1=Coorneu(Numtri(l, 1),:);
-  S2=Coorneu(Numtri(l, 2),:);
-  S3=Coorneu(Numtri(l, 3),:);
-  % calcul des matrices elementaires du triangle l 
-  
-       % Matrice de masse elementaire    
-   Mel=matM_elem(S1, S2, S3);
-   
+    % Coordonnees des sommets du triangles
+    S1=Coorneu(Numtri(l, 1),:);
+    S2=Coorneu(Numtri(l, 2),:);
+    S3=Coorneu(Numtri(l, 3),:);
+    % calcul des matrices elementaires du triangle l
+
+    % Matrice de masse elementaire
+    Mel=matM_elem(S1, S2, S3);
+
     % Matrice de rigidite elementaire
-    % LA ROUTINE matK_mu_elem.m DOIT ETRE MODIFIEE
-   Kel=matK_mu_elem(S1, S2, S3,Reftri(l));
-  
- 
+    Kel=matK_mu_elem(S1, S2, S3,Reftri(l));
 
     % On fait l'assemblage de la matrice globale
-    % A COMPLETER
     for i=1:3
-      I = Numtri(l, i);
-      for j=1:3
-          J = Numtri(l, j);
-          MM(I,J) = MM(I,J) + Mel(i,j);
-          KK(I,J) = KK(I,J) + Kel(i,j);
-      end % for j
-  end % for i
-    
+        I = Numtri(l, i);
+        for j=1:3
+            J = Numtri(l, j);
+            MM(I,J) = MM(I,J) + Mel(i,j);
+            KK(I,J) = KK(I,J) + Kel(i,j);
+        end % for j
+    end % for i
+
 end % for l
 
 % Matrice de masse surfacique pour les conditions de Fourier %
 % ---------------------------------------------------------- %
 if (strcmp(CL, 'Fourier') || strcmp(CL, 'fourier') ||...
-    strcmp(CL, 'Mixtes')  || strcmp(CL, 'mixtes'))
+        strcmp(CL, 'Mixtes')  || strcmp(CL, 'mixtes'))
     % On trouve les aretes sur lesquelles la condition de Fourier est imposee
     idFourier = find(Refaretes == 2);   % Indices des aretes pour Fourier
     NbFourier = length(idFourier);      % Nombre d'aretes sur lesquelles Fourier est imposee
@@ -115,22 +110,20 @@ if (strcmp(CL, 'Fourier') || strcmp(CL, 'fourier') ||...
     % Assemblage sur les aretes de reference 2
     for l = 1:NbFourier
         % Matrice de masse surfacique elementaire
-        % LA ROUTINE matS_elem.m DOIT ETRE COMPLETEE
         [Sel] = matS_elem(Coorneu(Numaretes(idFourier(l),1),:),...
-                          Coorneu(Numaretes(idFourier(l),2), :), Refaretes(idFourier(l)));
+            Coorneu(Numaretes(idFourier(l),2), :), Refaretes(idFourier(l)));
 
         % On fait l'assemblage de la matrice de masse surfacique globale
-        % A COMPLETER
         for i = 1:2
-          I = Numaretes(idFourier(l),i);
-          for j = 1:2
-              J = Numaretes(idFourier(l),j);
-              SS(I,J) = SS(I,J)+ Sel(i,j);
-          end 
-        end 
-        
+            I = Numaretes(idFourier(l),i);
+            for j = 1:2
+                J = Numaretes(idFourier(l),j);
+                SS(I,J) = SS(I,J)+ Sel(i,j);
+            end
+        end
+
     end % for l
-end % for if
+end % if
 
 % ---------- %
 % Matrice EF %
@@ -138,19 +131,15 @@ end % for if
 AA = alpha*MM + KK;
 
 if (strcmp(CL, 'Fourier') || strcmp(CL, 'fourier') ||...
-    strcmp(CL, 'Mixtes')  || strcmp(CL, 'mixtes'))
-  % On rajoute la contribution de la matrice de masse surfacique
-  % dans le cas des condtions de 'Fourier' ou 'Mixtes'
-  % COMPLETER
-  AA = AA + beta*SS;
+        strcmp(CL, 'Mixtes')  || strcmp(CL, 'mixtes'))
+    % On rajoute la contribution de la matrice de masse surfacique
+    % dans le cas des condtions de 'Fourier' ou 'Mixtes'
+    AA = AA + beta*SS;
 end
 
 % ------------------------- %
 % Calcul du second membre F %
 % ------------------------- %
-% A COMPLETER EN UTILISANT LA ROUTINE f.m
-%  /!\ ATTENTION : f prend aussi omega en argument /!\
-
 FF = f(Coorneu(:,1), Coorneu(:,2), omega);
 LL = MM*FF;
 
@@ -158,75 +147,103 @@ LL = MM*FF;
 % Pseudo-elimination et inversion %
 % ------------------------------- %
 if (strcmp(CL, 'Dirichlet') || strcmp(CL, 'dirichlet') ||...
-    strcmp(CL, 'Mixtes')    || strcmp(CL, 'mixtes'))
-  % Conditions de Dirichlet ou conditions mixtes
-  % tilde_AA ET tilde_LL SONT LA MATRICE EF ET LE VECTEUR SECOND MEMBRE
-  % APRES PSEUDO_ELIMINATION
-  % ECRIRE LA ROUTINE elimine.m ET INSERER L'APPEL A CETTE ROUTINE
-  % A UN ENDROIT APPROPRIE
-  [tilde_AA, tilde_LL] = elimine(AA, LL, Refneu);
-  UU = tilde_AA \ tilde_LL;
-  PP = UU + PP_Gamma;
+        strcmp(CL, 'Mixtes')    || strcmp(CL, 'mixtes'))
+    % Conditions de Dirichlet ou conditions mixtes
+    % tilde_AA ET tilde_LL SONT LA MATRICE EF ET LE VECTEUR SECOND MEMBRE
+    % APRES PSEUDO_ELIMINATION
+    % ECRIRE LA ROUTINE elimine.m ET INSERER L'APPEL A CETTE ROUTINE
+    % A UN ENDROIT APPROPRIE
+    [tilde_AA, tilde_LL] = elimine(AA, LL, Refneu);
+    UU = tilde_AA \ tilde_LL;
+    PP = UU + PP_Gamma;
 else
-  % Conditions de Neumann ou de Fourier
-  PP = AA \ LL;
+    % Conditions de Neumann ou de Fourier
+    PP = AA \ LL;
 end
 
 if strcmp(validation, 'oui')
-  % ------------------------------------------------------------------ %
-  % Pour tracer la norme de l'inverse de A(omega) en fonction de omega %
-  % ------------------------------------------------------------------ %
-  % A COMPLETER
+    % ------------------------------------------------------------------ %
+    % Pour tracer la norme de l'inverse de A(omega) en fonction de omega %
+    % ------------------------------------------------------------------ %
+    % A COMPLETER
 end
 
 % ---------- %
 % Validation %
 % ---------- %
 if strcmp(validation, 'oui')
-  % Solution de reference
+    % Solution de reference
+    %u(x, y) = sin(3πx) * sin(4πy)
+    PP_exact = PP_Gamma + sin(3*pi*Coorneu(:,1)) .* sin(4*pi*Coorneu(:,2));
 
-  %u(x, y) = sin(3πx) sin(4πy)
-  PP_exact = PP_Gamma + sin(3*pi*Coorneu(:,1)) .* sin(4*pi*Coorneu(:,2));
-
-  %f(x, y) = Asin(ωr)
-
-
-
-  % Calcul de l'erreur L2
+    % Calcul de l'erreur L2 relative
     diff = PP - PP_exact;
+    norm_L2 = sqrt(diff' * MM * diff) / sqrt(PP' * MM * PP);
+    % Calcul de l'erreur semi H1 relative
+    semi_norm_H1 = sqrt(diff' * KK * diff) / sqrt(PP' * KK * PP);
 
-    % Calcul de l erreur L2
-    norm_L2 = sqrt(diff' * MM * diff);
-  % Calcul de l erreur H1
-  semi_norm_H1 = sqrt(diff' * KK * diff);
+    %Affichage erreurs
+    fprintf('erruer L2 relative = %e\n', norm_L2);
+    fprintf('erreur semi_H1 relative =  %e\n', semi_norm_H1);
 
-  %Affichage erreurs
-fprintf('erruer L2 = %e\n', norm_L2);
-fprintf('erreur semi_H1 =  %e\n', semi_norm_H1);
-  % attention de bien changer le terme source (dans FF)
+
+    %Ordre de convergence
+    h_vals = [0.01, 0.04, 0.07, 0.09, 0.1];
+    erreurs_L2 = [1.641431e-03, 2.665346e-02, 7.462054e-02, 1.387312e-01, 1.755028e-01];
+    erreurs_H1 = [1.759232e-03, 2.807969e-02, 7.704490e-02, 1.210036e-01, 1.733240e-01];
+    log_h_inv = log(1 ./ h_vals);
+    log_err_L2 = log(erreurs_L2);
+    log_err_H1 = log(erreurs_H1);
+
+
+    % L2
+    figure;
+    plot(log_h_inv, log_err_L2, 'o-', 'LineWidth', 2);
+    xlabel('log(1/h)');
+    ylabel('log(erreur L2 relative)');
+    title('Convergence en norme L2 relative');
+    grid on;
+    % Ligne de pente 1 pour référence
+    hold on;
+    ref = -2 * log_h_inv + min(log_err_L2) + 2 * max(log_h_inv);
+    plot(log_h_inv, ref, '--r', 'LineWidth', 1.5);
+    legend('Erreur L2 relative calculée', 'Pente 2 (O(h^2))');
+
+    %semi-H1
+    figure;
+    plot(log_h_inv, log_err_H1, 'o-', 'LineWidth', 2);
+    xlabel('log(1/h)');
+    ylabel('log(erreur semi-H1 relative)');
+    title('Convergence en norme semi-H1 relative');
+    grid on;
+    % Ligne de pente 2 pour référence
+    hold on;
+    ref = -2*log_h_inv + min(log_err_H1) +  2*max(log_h_inv);
+    plot(log_h_inv, ref, '--r', 'LineWidth', 1.5);
+    legend('Erreur semi-H1 relative calculée', 'Pente 2 (O(h^2))');
 end
 
 % % ------------- %
 % % Visualisation %
 % % ------------- %
 if (strcmp(CL, 'Dirichlet') || strcmp(CL, 'dirichlet'))
-  % La solution est reelle : on l'affiche donc dans une seule figure
-  figure;
-  affiche(real(PP), Numtri, Coorneu, sprintf('Dirichlet - %s', nom_maillage));
-  set(gca, 'DataAspectRatio',[1 1 1]);
+    % La solution est reelle : on l'affiche donc dans une seule figure
+    figure;
+    affiche(real(PP), Numtri, Coorneu, sprintf('Dirichlet - %s', nom_maillage));
+    set(gca, 'DataAspectRatio',[1 1 1]);
 end
 
 if (strcmp(CL, 'Fourier') || strcmp(CL, 'fourier') ||...
-    strcmp(CL, 'Mixtes')  || strcmp(CL, 'mixtes'))
-  % La solution est COMPLEXE : on affiche donc ses parties reelle et
-  % imaginaire dans des figures
-  figure;
-  affiche(real(PP), Numtri, Coorneu, sprintf('%s - Real(P) - %s', CL, nom_maillage));
-  set(gca, 'DataAspectRatio',[1 1 1]);
+        strcmp(CL, 'Mixtes')  || strcmp(CL, 'mixtes'))
+    % La solution est COMPLEXE : on affiche donc ses parties reelle et
+    % imaginaire dans des figures
+    figure;
+    affiche(real(PP), Numtri, Coorneu, sprintf('%s - Real(P) - %s', CL, nom_maillage));
+    set(gca, 'DataAspectRatio',[1 1 1]);
 
-  figure;
-  affiche(imag(PP), Numtri, Coorneu, sprintf('%s - Imag(P) - %s', CL, nom_maillage));
-  set(gca, 'DataAspectRatio',[1 1 1]);
+    figure;
+    affiche(imag(PP), Numtri, Coorneu, sprintf('%s - Imag(P) - %s', CL, nom_maillage));
+    set(gca, 'DataAspectRatio',[1 1 1]);
 end
 
 % Affichage de la solution exacte
