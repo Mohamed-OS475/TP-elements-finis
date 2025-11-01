@@ -40,7 +40,7 @@ CL = 'Fourier'; % 'Dirichlet', 'Neumann' ou 'Fourier'ou 'Mixtes'
 
 % Donnees du probleme
 rho = 1.0;        % Coefficient du probleme
-omega = sqrt(2)*pi;      % Frequence
+omega = 4.0;      % Frequence
 PP_Gamma = 1.0;   % Pression exterieure
 alpha = -rho * omega^2;
 
@@ -256,3 +256,4 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %                                                        fin de la routine
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%25
+
